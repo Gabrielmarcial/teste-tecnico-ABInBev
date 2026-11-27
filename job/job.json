@@ -1,0 +1,185 @@
+{
+  "name": "job_beverage",
+  "email_notifications": {
+    "no_alert_for_skipped_runs": false
+  },
+  "webhook_notifications": {},
+  "timeout_seconds": 0,
+  "max_concurrent_runs": 1,
+  "tasks": [
+    {
+      "task_key": "rawToBronze_Sales",
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/bronze",
+        "base_parameters": {
+          "ENVIRONMENT": "dev",
+          "RAW_PATH": "/Volumes/martech_dev/raw/raw_files/beverage/sales/",
+          "CHECKPOINT_PATH": "/Volumes/martech_dev/bronze/checkpoint/sales",
+          "SCHEMA_PATH": "/Volumes/martech_dev/bronze/autoloader_metadata/sales/schema",
+          "CATALOG": "martech_dev",
+          "SCHEMA": "bronze",
+          "TABLE_NAME": "tb_sales"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "BronzeToSilver_Sales",
+      "depends_on": [
+        {
+          "task_key": "rawToBronze_Sales"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/silver_sales",
+        "base_parameters": {
+          "CATALOG": "martech_dev",
+          "CHECKPOINT_PATH": "/Volumes/martech_dev/silver/checkpoint/sales"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "rawToBronze_channel_group",
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/bronze",
+        "base_parameters": {
+          "ENVIRONMENT": "dev",
+          "RAW_PATH": "/Volumes/martech_dev/raw/raw_files/beverage/channel_group/",
+          "CHECKPOINT_PATH": "/Volumes/martech_dev/bronze/checkpoint/channel_group",
+          "SCHEMA_PATH": "/Volumes/martech_dev/bronze/autoloader_metadata/channel_raw/schema",
+          "CATALOG": "martech_dev",
+          "SCHEMA": "bronze",
+          "TABLE_NAME": "tb_channel_group"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "BronzeToSilver_Channel_group",
+      "depends_on": [
+        {
+          "task_key": "rawToBronze_channel_group"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/silver_channel_group",
+        "base_parameters": {
+          "CATALOG": "martech_dev",
+          "CHECKPOINT_PATH": "/Volumes/martech_dev/silver/checkpoint/channel_group"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "Gold_enriched",
+      "depends_on": [
+        {
+          "task_key": "BronzeToSilver_Sales"
+        },
+        {
+          "task_key": "BronzeToSilver_Channel_group"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/gold_enriched",
+        "base_parameters": {
+          "CATALOG": "martech_dev"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "Gold_dim",
+      "depends_on": [
+        {
+          "task_key": "Gold_enriched"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/gold_dim",
+        "base_parameters": {
+          "CATALOG": "martech_dev"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "Gold_fato",
+      "depends_on": [
+        {
+          "task_key": "Gold_enriched"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/gold_fato",
+        "base_parameters": {
+          "CATALOG": "martech_dev"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    },
+    {
+      "task_key": "Gold_agg",
+      "depends_on": [
+        {
+          "task_key": "Gold_fato"
+        },
+        {
+          "task_key": "Gold_dim"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/gmpaiva228@gmail.com/teste-tecnico/teste-tecnico-ABInBev/src/gold_agg",
+        "base_parameters": {
+          "CATALOG": "martech_dev"
+        },
+        "source": "WORKSPACE"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "webhook_notifications": {},
+      "disabled": false
+    }
+  ],
+  "queue": {
+    "enabled": true
+  },
+  "performance_target": "PERFORMANCE_OPTIMIZED"
+}
