@@ -3,7 +3,6 @@
 MVP de uma plataforma analítica de vendas de bebidas, construído como caso técnico de Engenharia de Dados.
 O projeto ingere dois arquivos CSV, trata e integra os dados em camadas (bronze, silver e gold), modela um **star schema** e responde a perguntas de negócio usando apenas o modelo dimensional.
 
-> **Aviso:** o enunciado do caso e os arquivos de dados são de uso restrito a processos seletivos. Este repositório contém somente a solução (código e documentação). Os CSVs e o enunciado **não** devem ser versionados nem compartilhados publicamente.
 
 ---
 
@@ -271,32 +270,8 @@ ORDER BY region_name;
 
 ---
 
-## 9. Validação e qualidade dos dados
 
-Cada notebook termina com células de validação. Para o arquivo de 2021-07-26, os valores esperados são:
-
-| Verificação | Esperado |
-|---|---|
-| Linhas em bronze, silver, `tb_sales_enriched`, `fact_sales` | 16.151 |
-| Soma de `sales_volume` em todas as camadas | 4.348.925,16 |
-| `sales_key` únicas | 16.151 |
-| Vendas sem canal correspondente | 0 |
-| Linhas das dimensões (date, brand, region, channel, package) | 13, 4, 7, 31, 8 |
-| Chaves órfãs da fato em cada dimensão | 0 |
-| Datas nulas ou inconsistentes com `year` e `month` | 0 |
-
-**Achados sobre os dados**
-
-* 260 linhas com volume negativo (devoluções ou ajustes) e 127 com volume zero. Todas foram mantidas.
-* `brand_nm` chega com espaço à esquerda em 100% das linhas (tratado com `trim`).
-* `CHNL_GROUP` e `TRADE_GROUP_DESC` são hierarquias distintas.
-* Cada data tem um único `PERIOD`, e `tsr_pckg_nm` determina `pkg_cat` e `pkg_cat_desc`.
-
-**Reconciliação:** a última task (`Gold_agg`) compara linhas e soma de volume entre silver, `tb_sales_enriched`, `fact_sales` e `agg_sales_region_brand`, e confere se a fato não tem chaves sem dimensão.
-
----
-
-## 10. Decisões de projeto
+## 9. Decisões de projeto
 
 | Decisão | Motivo |
 |---|---|
@@ -312,7 +287,7 @@ Cada notebook termina com células de validação. Para o arquivo de 2021-07-26,
 
 ---
 
-## 11. Como executar
+## 10. Como executar
 
 ### Pré-requisitos
 
@@ -323,22 +298,20 @@ Cada notebook termina com células de validação. Para o arquivo de 2021-07-26,
 
 1. **Upload:** envie cada CSV para uma pasta própria do Volume de landing (uma pasta por fonte).
 2. **Importe os notebooks** em `src/` e crie um Job com as tasks da seção [Orquestração](#7-orquestração-job).
-3. **Primeira execução:** rode com `RESET = true` para criar as tabelas do zero.
-4. **Execuções seguintes:** use `RESET = false`. O resultado deve ser idêntico (idempotência do `MERGE`).
+
 
 ### Parâmetros dos notebooks
 
 | Notebook | Widgets |
 |---|---|
 | Bronze | `RESET`, `RAW_PATH`, `CHECKPOINT_PATH`, `SCHEMA_PATH`, `CATALOG`, `SCHEMA`, `TABLE_NAME` |
-| Silver | `RESET`, `CATALOG`, `CHECKPOINT_PATH` (e `TABLE_NAME` no canal) |
-| Gold | `RESET`, `CATALOG` (e `CHANNEL_TABLE` no `Gold_enriched`) |
+| Silver | `CATALOG`, `CHECKPOINT_PATH` |
+| Gold | `CATALOG`|
 
-> **Recarga completa:** se você recriar a bronze (`RESET = true` lá), faça o mesmo na silver. Sem apagar o checkpoint, a tabela recriada fica vazia, porque o Auto Loader considera o arquivo já processado.
 
 ---
 
-## 12. Estrutura do repositório
+## 11. Estrutura do repositório
 
 ```
 .
@@ -360,7 +333,7 @@ Cada notebook termina com células de validação. Para o arquivo de 2021-07-26,
 
 ---
 
-## 13. Limitações e próximos passos
+## 12. Limitações e próximos passos
 
 **Limitações do MVP**
 
